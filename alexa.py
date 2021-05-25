@@ -1,15 +1,19 @@
+from typing import Text
 import speech_recognition as sr
 import pyttsx3
 import pywhatkit
 import datetime
 import wikipedia
 import pyjokes
-import requests,sys
+import requests,sys,json
 import smtplib
 import webbrowser,os
-import smtplib
+import smtplib,time,PyPDF2
 import cv2
 from requests import get
+import pyautogui
+import instaloader
+import self_tweet
 
 alexaa = pyttsx3.init('sapi5')                                                 #text-to-speech converter
 voices = alexaa.getProperty('voices')                                          #gets all voices
@@ -56,7 +60,7 @@ def take_command():                                                         #fun
         command = listener.recognize_google(voice,language='en-in')         #your command is converted into text using google api
         print(f"You said: {command}")
     except Exception as e:
-        print("Say that again please")
+        print("Sorry I dont know that")
         return "None"
     return command
 
@@ -67,6 +71,71 @@ def sendEmail(to, content):                                                #func
     server.login('gtafive5one@gmail.com', 'epicgame1')
     server.sendmail('gtafive5one@gmail.com', to, content)
     server.close()
+
+def news():
+    main_url = 'http://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=b4949ddb6afd4593a1176f76bfe0a288'
+    fetched_news = requests.get(main_url).json()
+    articles = fetched_news['articles']
+    headlines = []
+    day = ["first","second","third","fourth","fifth"]
+    for ar in articles:
+        headlines.append(ar["title"])
+    for i in range(len(day)):
+        print(f"Today's {day[i]} news is: {headlines[i]}")
+        talk(f"Today's {day[i]} news is: {headlines[i]}")
+
+def mylocation():
+    try:
+        ip_address = requests.get('https://api.ipify.org').text
+        url = 'https://get.geojs.io/v1/ip/geo/'+ip_address+'.json'
+        geo_requests = requests.get(url)
+        geo_data = geo_requests.json()
+        city = geo_data['city']
+        country = geo_data['country']
+        talk(f"I am not sure, but I think we are in {city} city of {country} country")
+    except Exception as e:
+        talk("Sorry, but due to network issues I am not able to track our location")
+        pass
+
+def insta():
+    talk("Please enter the correct user name")
+    name = input("Enter insta ID here:")
+    talk(f"Here is the innsta gram profile of {name}")
+    webbrowser.open(f"www.instagram.com/{name}")
+    time.sleep(3)
+    talk("Would you like to download the profile picture of this account?")
+    reply = take_command().lower()
+    if "yes" in reply:
+        instagram = instaloader.Instaloader()
+        instagram.download_profile(name, profile_pic_only = True)
+        talk("Done, profile picture has been saved")
+    else:
+        talk("OK")
+        pass
+
+def pdf_reader():
+    pdf = open('The_Night_We_Met.pdf','rb')                                   #read binary
+    pdfReader = PyPDF2.PdfFileReader(pdf)
+    pages = pdfReader.numPages
+    talk(f'Total number of pages in this pdf is {pages}')
+    talk('Please enter the page number you want me to read')
+    page_no = int(input("Enter the page number here: "))
+    page_no = page_no - 1
+    page = pdfReader.getPage(page_no)
+    content = page.extractText()
+
+    #to increase speech-speed
+    time.sleep(1)
+    talk('Please enter the number of words i have to read per minute')
+    time.sleep(1)
+    voiceRate = int(input("Enter the number of words to be read per minute(default is 200): "))
+    time.sleep(1)
+    alexaa.setProperty('rate',voiceRate)
+    talk(content)
+    alexaa.setProperty('rate',200)
+    time.sleep(2)
+
+    talk('Done, page finished')
 
 #setting chrome as the browser to open sites
 webbrowser.register('chrome',None,
@@ -169,15 +238,69 @@ if __name__ == "__main__":
             #(number with country code,message,hours in 24-format,minutes) At the time specified message will be sent
             pywhatkit.sendwhatmsg("+917019821076","message from alexa",22,7)                          
             talk("Message has been sent")   
-        elif 'stop' in command:
-            talk("Thank you for using me. Goodbye!")
-            sys.exit()
-        elif 'thank you' in command:
+        elif 'stop' in command or 'thank you' in command:
             talk("Thank you for using me. Goodbye!")
             sys.exit()
         elif 'are you single' in command:
             talk("Yes, but to be honest, I don't think so.")
         elif 'do you love me' in command:
             talk("Yes, and only because you’re enjoying it.")
+        elif 'switch the window' in command:
+            pyautogui.keyDown("alt")
+            pyautogui.press("tab")
+            time.sleep(1)
+            pyautogui.keyUp("alt")
+        elif "news" in command:
+            talk("Fetching today's latest news")
+            news()
+        elif "shut down the system" in command:
+            talk("Shutting down")
+            os.system("shutdown /s /t 5")
+        elif "restart the system" in command:
+            talk("Restarting")
+            os.system("shutdown /r /t 5")
+        elif "the system into sleep" in command:
+            talk("Sleep mode ON")
+            os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+        elif "where am I" in command or "what is my location" in command or "where are we" in command:
+            talk("Let me check")
+            mylocation()
+        elif "instagram profile" in command or "profile on instagram" in command:
+            insta()
+        elif "take a screenshot" in command or  "screenshot the screen" in command:
+            talk("In what name the screenshot must be saved?")
+            name = take_command().lower()
+            talk("Leave the screen idle for 3 seconds")
+            time.sleep(3)
+            screenshot = pyautogui.screenshot()
+            screenshot.save(f"{name}.png")
+            talk("Done, screenshot is captured")
+        elif "tweet" in command:
+            #have your twitter cerdentials saved in twitter_info.txt file
+            talk("What you want to tweet?")
+            tweet = take_command().capitalize()
+            if tweet == 'none':
+                talk("tweet can't be empty")
+                continue
+            else:
+                try:
+                    self_tweet.tweet(tweet)
+                    talk("Done, Tweeted successfully!")
+                except:
+                    talk("Tweet failed")
+                    pass
+        elif "pdf" in command:
+            pdf_reader()
+        elif "hide all files" in command or "hide this folder" in command:  
+            os.system("attrib +h /s /d")
+            talk("All the files in the current directory are hidden")
+        elif "visible to everyone" in command:
+            talk("Are you sure?")
+            reply = take_command().lower()
+            if "yes" in reply:
+                os.system("attrib -h /s /d")
+                talk("All the files in the current directory are visible to everyone now")
+            else:
+                talk("Ok, Files untouched")
         else:
             talk('Sorry I dont know that')
