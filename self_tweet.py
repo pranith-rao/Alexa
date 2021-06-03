@@ -15,7 +15,7 @@ def tweet(tweet):
 
     #tweet = "Hello World! Alex here.."
 
-    options = Options()
+    options = webdriver.ChromeOptions() 
     options.add_argument("start-maximized")
     driver = webdriver.Chrome(options=options)
 
@@ -34,7 +34,7 @@ def tweet(tweet):
     driver.find_element_by_xpath(loginbtn_xpath).click()
 
     tweetbtn_xpath = '//*[@id="react-root"]/div/div/div[2]/header/div/div/div/div[1]/div[3]/a/div'
-    textarea_xpath = '//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div[3]/div/div/div/div[1]/div/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div[1]/div/div/div/div[2]/div/div/div/div'
+    textarea_xpath = '//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div[3]/div/div/div/div[1]/div/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/label/div[1]/div/div/div/div/div[2]/div/div/div/div'
     sendtweet_xpath = '//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div[3]/div/div/div/div[1]/div/div/div/div/div[2]/div[3]/div/div/div[2]/div/div/span/span'
 
     time.sleep(2)
