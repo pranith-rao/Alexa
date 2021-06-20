@@ -22,6 +22,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUiType
 from start_page import Ui_Alexa
 import operator
+import psutil
+import speedtest
 
 
 alexaa = pyttsx3.init('sapi5')                                                 #text-to-speech converter
@@ -156,198 +158,233 @@ class MainThread(QThread):
             print(f"You said: {command}")
         except Exception as e:
             print("Sorry I dont know that")
+            print("If command is not getting executed i think you need to wake me up")
             return "None"
+        command = command.lower()
         return command
 
 
     def TaskExecution(self):
-        wishMe()
         while True:
-            self.command = self.take_command().lower()
-            if 'play' in self.command:                                               #command to play song
-                song = self.command.replace('play', '')                              #play is removed from command so that we get the song name
-                talk('playing ' + song)                                         #alexa will inform us which song is being played
-                pywhatkit.playonyt(song)                                        #song will be played on youtube
-            elif 'the time' in self.command:                                         #if time is asked
-                now_time = datetime.datetime.now().strftime('%I:%M %p')             #time is converted into string using strftime() %I is 12-hour clock %M is minutes %p is am or pm
-                talk('Current time is ' + now_time)
-            elif 'who is' in self.command:
-                try:
-                    person = self.command.split("who is",1)[1]                       #command will be trimmed to only the subject name after who is 
-                    person = str(person)
-                    info = wikipedia.summary(person, 1, auto_suggest=False)     #alexa will go through wikipedia and tell us about it. 1 specifies no.of statemets you want about the subject
-                    print(f"According to Wikipedia: {info}")
-                    talk(info)
-                except:
-                    talk("Sorry no results found")
-            elif 'date' in self.command:
-                date = datetime.date.today().strftime("%B %d, %Y")              #month,day,year
-                talk('Todays date is'+ str(date))
-            elif 'joke' in self.command:
-                talk(pyjokes.get_joke())
-            elif 'weather' in self.command:
-                try:
-                    city = str(self.command.split("in",1)[1]).lower().lstrip()
-                    weather_api = weather(city)
-                    talk('Weather in' +city +'is'+ weather_api + 'degree celsius')
-                except:
-                    talk("Sorry I dont know that place")
-            elif 'wikipedia' in self.command:
-                talk('Searching Wikipedia..')
-                try:
-                    self.command = self.command.replace("wikipedia", "")
-                    info = wikipedia.summary(self.command, 1, auto_suggest=False)
-                    talk("According to wikipedia")
-                    print(f"According to Wikipedia: {info}")
-                    talk(info)
-                except:
-                    talk("Sorry no results found")
-            elif 'open youtube' in self.command:
-                talk("Opening youtube")
-                webbrowser.get('chrome').open("youtube.com")
-            elif 'open google' in self.command:
-                talk("What should I search on google?")
-                try:
-                    search = self.take_command().lower()
-                except:
-                    talk("Please repeat it again")
-                    search = self.take_command().lower()
-                talk("Fetching your results from google")
-                webbrowser.get('chrome').open(f"google.com/search?q={search}")
-            elif 'open stack overflow' in self.command:
-                talk("Opening stack overflow")
-                webbrowser.get('chrome').open("https://stackoverflow.com/")
-            elif 'open code' in self.command:
-                talk("Opening visual studio code")
-                vs_path = "C:\\Users\\prani\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
-                os.startfile(vs_path)
-            elif 'open command prompt' in self.command:
-                os.system("start cmd")
-            elif "open camera" in self.command:
-                cap = cv2.VideoCapture(0)
+            self.permission = self.take_command()
+            if 'wake up' in self.permission:
+                wishMe()
                 while True:
-                    ret ,img = cap.read()
-                    cv2.imshow('webcam', img)
-                    k = cv2.waitKey(50)
-                    if k == 27:
+                    self.command = self.take_command()
+                    if 'play' in self.command:                                               #command to play song
+                        song = self.command.replace('play', '')                              #play is removed from command so that we get the song name
+                        talk('playing ' + song)                                         #alexa will inform us which song is being played
+                        pywhatkit.playonyt(song)                                        #song will be played on youtube
+                    elif 'the time' in self.command:                                         #if time is asked
+                        now_time = datetime.datetime.now().strftime('%I:%M %p')             #time is converted into string using strftime() %I is 12-hour clock %M is minutes %p is am or pm
+                        talk('Current time is ' + now_time)
+                    elif 'sleep' in self.command:
+                        talk("Going to sleep")
+                        talk("Just say Alexa wake up to wake me up")
                         break
-                cap.release()
-                cv2.destroyAllWindows()
-            elif "open notepad" in self.command:
-                talk("Opening notepad")
-                np_path = "C:\\Windows\\system32\\notepad.exe"
-                os.startfile(np_path)
-            elif "close notepad" in self.command:
-                talk("Closing notepad")
-                os.system("taskkill /f /im notepad.exe")  
-            elif "ip address" in self.command:
-                ip = get('https://api.ipify.org').text
-                print(f"Your IP address is {ip}")
-                talk(f"Your IP address is {ip}")        
-            elif 'email to' in self.command:
-                try:
-                    to = "pranithrao3@gmail.com"
-                    talk("What should I say?")
-                    content = self.take_command()    
-                    sendEmail(to, content)
-                    talk("Email has been sent!")
-                except Exception as e:
-                    print(e)
-                    talk("Sorry! I am not able to send this email")
-            elif 'send whatsapp message' in self.command:
-                #(number with country code,message,hours in 24-format,minutes) At the time specified message will be sent
-                pywhatkit.sendwhatmsg("+917019821076","message from alexa",22,7)                          
-                talk("Message has been sent")   
-            elif 'stop' in self.command or 'thank you' in self.command:
+                    elif 'stop' in self.command or 'thank you' in self.command:
+                        talk("Thank you for using me. Goodbye!")
+                        sys.exit()
+                    elif 'who is' in self.command:
+                        try:
+                            person = self.command.split("who is",1)[1]                       #command will be trimmed to only the subject name after who is 
+                            person = str(person)
+                            info = wikipedia.summary(person, 1, auto_suggest=False)     #alexa will go through wikipedia and tell us about it. 1 specifies no.of statemets you want about the subject
+                            print(f"According to Wikipedia: {info}")
+                            talk(info)
+                        except:
+                            talk("Sorry no results found")
+                    elif 'date' in self.command:
+                        date = datetime.date.today().strftime("%B %d, %Y")              #month,day,year
+                        talk('Todays date is'+ str(date))
+                    elif 'joke' in self.command:
+                        talk(pyjokes.get_joke())
+                    elif 'weather' in self.command:
+                        try:
+                            city = str(self.command.split("in",1)[1]).lower().lstrip()
+                            weather_api = weather(city)
+                            talk('Weather in' +city +'is'+ weather_api + 'degree celsius')
+                        except:
+                            talk("Sorry I dont know that place")
+                    elif 'wikipedia' in self.command:
+                        talk('Searching Wikipedia..')
+                        try:
+                            self.command = self.command.replace("wikipedia", "")
+                            info = wikipedia.summary(self.command, 1, auto_suggest=False)
+                            talk("According to wikipedia")
+                            print(f"According to Wikipedia: {info}")
+                            talk(info)
+                        except:
+                            talk("Sorry no results found")
+                    elif 'open youtube' in self.command:
+                        talk("Opening youtube")
+                        webbrowser.get('chrome').open("youtube.com")
+                    elif 'open google' in self.command:
+                        talk("What should I search on google?")
+                        try:
+                            search = self.take_command().lower()
+                        except:
+                            talk("Please repeat it again")
+                            search = self.take_command().lower()
+                        talk("Fetching your results from google")
+                        webbrowser.get('chrome').open(f"google.com/search?q={search}")
+                    elif 'open stack overflow' in self.command:
+                        talk("Opening stack overflow")
+                        webbrowser.get('chrome').open("https://stackoverflow.com/")
+                    elif 'open code' in self.command:
+                        talk("Opening visual studio code")
+                        vs_path = "C:\\Users\\prani\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
+                        os.startfile(vs_path)
+                    elif 'open command prompt' in self.command:
+                        os.system("start cmd")
+                    elif "open camera" in self.command:
+                        cap = cv2.VideoCapture(0)
+                        while True:
+                            ret ,img = cap.read()
+                            cv2.imshow('webcam', img)
+                            k = cv2.waitKey(50)
+                            if k == 27:
+                                break
+                        cap.release()
+                        cv2.destroyAllWindows()
+                    elif "open notepad" in self.command:
+                        talk("Opening notepad")
+                        np_path = "C:\\Windows\\system32\\notepad.exe"
+                        os.startfile(np_path)
+                    elif "close notepad" in self.command:
+                        talk("Closing notepad")
+                        os.system("taskkill /f /im notepad.exe")  
+                    elif "ip address" in self.command:
+                        ip = get('https://api.ipify.org').text
+                        print(f"Your IP address is {ip}")
+                        talk(f"Your IP address is {ip}")        
+                    elif 'email to' in self.command:
+                        try:
+                            to = "pranithrao3@gmail.com"
+                            talk("What should I say?")
+                            content = self.take_command()    
+                            sendEmail(to, content)
+                            talk("Email has been sent!")
+                        except Exception as e:
+                            print(e)
+                            talk("Sorry! I am not able to send this email")
+                    elif 'send whatsapp message' in self.command:
+                        #(number with country code,message,hours in 24-format,minutes) At the time specified message will be sent
+                        pywhatkit.sendwhatmsg("+917019821076","message from alexa",22,7)                          
+                        talk("Message has been sent")   
+                    elif 'are you single' in self.command:
+                        talk("Yes, but to be honest, I don't think so.")
+                    elif 'do you love me' in self.command:
+                        talk("Yes, and only because you’re enjoying it.")
+                    elif 'switch the window' in self.command:
+                        pyautogui.keyDown("alt")
+                        pyautogui.press("tab")
+                        time.sleep(1)
+                        pyautogui.keyUp("alt")
+                    elif "news" in self.command:
+                        talk("Fetching today's latest news")
+                        news()
+                    elif "shut down the system" in self.command:
+                        talk("Shutting down")
+                        os.system("shutdown /s /t 5")
+                    elif "restart the system" in self.command:
+                        talk("Restarting")
+                        os.system("shutdown /r /t 5")
+                    elif "the system into sleep" in self.command:
+                        talk("Sleep mode ON")
+                        os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+                    elif "where am i" in self.command or "what is my location" in self.command or "where are we" in self.command:
+                        talk("Let me check")
+                        mylocation()
+                    elif "instagram profile" in self.command or "profile on instagram" in self.command:
+                        insta(self)
+                    elif "take a screenshot" in self.command or  "screenshot the screen" in self.command:
+                        talk("In what name the screenshot must be saved?")
+                        name = self.take_command().lower()
+                        talk("Leave the screen idle for 3 seconds")
+                        time.sleep(3)
+                        screenshot = pyautogui.screenshot()
+                        screenshot.save(f"{name}.png")
+                        talk("Done, screenshot is captured")
+                    elif "tweet" in self.command:
+                        #have your twitter cerdentials saved in twitter_info.txt file
+                        talk("What you want to tweet?")
+                        tweet = self.take_command().capitalize()
+                        if tweet == 'none':
+                            talk("tweet can't be empty")
+                            continue
+                        else:
+                            try:
+                                self_tweet.tweet(tweet)
+                                talk("Done, Tweeted successfully!")
+                            except:
+                                talk("Tweet failed")
+                                pass
+                    elif "pdf" in self.command:
+                        pdf_reader()
+                    elif "hide all files" in self.command or "hide this folder" in self.command:  
+                        os.system("attrib +h /s /d")
+                        talk("All the files in the current directory are hidden")
+                    elif "visible to everyone" in self.command:
+                        talk("Are you sure?")
+                        reply = self.take_command().lower()
+                        if "yes" in reply:
+                            os.system("attrib -h /s /d")
+                            talk("All the files in the current directory are visible to everyone now")
+                        else:
+                            talk("Ok, Files untouched")
+                    #avoided voice recognition for this as it was taking numbers as words and operators as words
+                    #1000 as thousand sometimes and / as divided. So to avoid this taking input was better 
+                    elif "do some calculations" in self.command or "can you calculate" in self.command:
+                        talk("Please enter the question you want me to calculate.")
+                        print("Keep space between operands and operator. Eg: 2 ** 2")
+                        command = input("Enter your question: ")                                           
+                        def get_operator_fn(op):
+                            return{
+                                '+': operator.add,                
+                                '-': operator.sub,                
+                                '*': operator.mul,               
+                                '/': operator.truediv,
+                                '**': operator.pow,
+                                '%':operator.mod,     
+                            }[op] 
+                        def eval_binary_expr(op1,oper,op2):
+                            op1,op2 = int(op1), int(op2)
+                            return get_operator_fn(oper)(op1, op2)
+                        try:
+                            print(f"The result is {eval_binary_expr(*(command.split()))}")
+                            talk(f"The result is {eval_binary_expr(*(command.split()))}")
+                        except:
+                            print("Sorry invalid question")
+                            talk("Sorry invalid question")
+                    elif 'nephew' in self.command:
+                        talk("Sure")
+                        talk("Heyy Vivaansh! Here's your maamaa wishing you a very happy birthday. Stay blessed! Dum Dum baikaa")
+                        img = cv2.imread('Bday_Pic.jpg')
+                        print(img)
+                        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                        inverted_gray_image = 255 - gray_image
+                        blurred_img = cv2.GaussianBlur(inverted_gray_image, (21,21), 0)
+                        inverted_blurred_img = 255 - blurred_img
+                        pencil_sketch = cv2.divide(gray_image, inverted_blurred_img, scale=256.0)
+                        #cv2.imshow('Original Image',img)
+                        cv2.imshow('Happy Birthday',pencil_sketch)
+                        cv2.waitKey(0)
+                    elif 'battery' in self.command:
+                        battery = psutil.sensors_battery()
+                        percentage = battery.percent
+                        talk(f"Your system battery percentage is {percentage}")
+                    elif 'internet speed' in self.command or 'net speed' in self.command:
+                        talk("OK let me check")
+                        net_details = speedtest.Speedtest()
+                        downloadSpeed = int(net_details.download()/1000000)
+                        uploadSpeed = int(net_details.upload()/1000000)
+                        talk(f'Your download speed is {downloadSpeed} MB per second and your upload speed is {uploadSpeed} MB per second')
+                    else:
+                        talk('Sorry I dont know that')
+            elif 'stop' in self.permission or 'thank you' in self.permission:
                 talk("Thank you for using me. Goodbye!")
                 sys.exit()
-            elif 'are you single' in self.command:
-                talk("Yes, but to be honest, I don't think so.")
-            elif 'do you love me' in self.command:
-                talk("Yes, and only because you’re enjoying it.")
-            elif 'switch the window' in self.command:
-                pyautogui.keyDown("alt")
-                pyautogui.press("tab")
-                time.sleep(1)
-                pyautogui.keyUp("alt")
-            elif "news" in self.command:
-                talk("Fetching today's latest news")
-                news()
-            elif "shut down the system" in self.command:
-                talk("Shutting down")
-                os.system("shutdown /s /t 5")
-            elif "restart the system" in self.command:
-                talk("Restarting")
-                os.system("shutdown /r /t 5")
-            elif "the system into sleep" in self.command:
-                talk("Sleep mode ON")
-                os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
-            elif "where am i" in self.command or "what is my location" in self.command or "where are we" in self.command:
-                talk("Let me check")
-                mylocation()
-            elif "instagram profile" in self.command or "profile on instagram" in self.command:
-                insta(self)
-            elif "take a screenshot" in self.command or  "screenshot the screen" in self.command:
-                talk("In what name the screenshot must be saved?")
-                name = self.take_command().lower()
-                talk("Leave the screen idle for 3 seconds")
-                time.sleep(3)
-                screenshot = pyautogui.screenshot()
-                screenshot.save(f"{name}.png")
-                talk("Done, screenshot is captured")
-            elif "tweet" in self.command:
-                #have your twitter cerdentials saved in twitter_info.txt file
-                talk("What you want to tweet?")
-                tweet = self.take_command().capitalize()
-                if tweet == 'none':
-                    talk("tweet can't be empty")
-                    continue
-                else:
-                    try:
-                        self_tweet.tweet(tweet)
-                        talk("Done, Tweeted successfully!")
-                    except:
-                        talk("Tweet failed")
-                        pass
-            elif "pdf" in self.command:
-                pdf_reader()
-            elif "hide all files" in self.command or "hide this folder" in self.command:  
-                os.system("attrib +h /s /d")
-                talk("All the files in the current directory are hidden")
-            elif "visible to everyone" in self.command:
-                talk("Are you sure?")
-                reply = self.take_command().lower()
-                if "yes" in reply:
-                    os.system("attrib -h /s /d")
-                    talk("All the files in the current directory are visible to everyone now")
-                else:
-                    talk("Ok, Files untouched")
-            #avoided voice recognition for this as it was taking numbers as words and operators as words
-            #1000 as thousand sometimes and / as divided. So to avoid this taking input was better 
-            elif "do some calculations" in self.command or "can you calculate" in self.command:
-                talk("Please enter the question you want me to calculate.")
-                print("Keep space between operands and operator. Eg: 2 ** 2")
-                command = input("Enter your question: ")                                           
-                def get_operator_fn(op):
-                    return{
-                        '+': operator.add,                
-                        '-': operator.sub,                
-                        '*': operator.mul,               
-                        '/': operator.truediv,
-                        '**': operator.pow,
-                        '%':operator.mod,     
-                    }[op] 
-                def eval_binary_expr(op1,oper,op2):
-                    op1,op2 = int(op1), int(op2)
-                    return get_operator_fn(oper)(op1, op2)
-                try:
-                    print(f"The result is {eval_binary_expr(*(command.split()))}")
-                    talk(f"The result is {eval_binary_expr(*(command.split()))}")
-                except:
-                    print("Sorry invalid question")
-                    talk("Sorry invalid question")
-            else:
-                talk('Sorry I dont know that')
 
 startExecution = MainThread()
 
@@ -360,7 +397,7 @@ class Main(QMainWindow):
         self.ui.pushButton_2.clicked.connect(self.close)
 
     def startTask(self):
-        self.ui.movie = QtGui.QMovie("D:/Downloads/alexa.gif")
+        self.ui.movie = QtGui.QMovie("alexa.gif")
         self.ui.label.setMovie(self.ui.movie)
         self.ui.movie.start()
         timer = QTimer(self)

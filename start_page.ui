@@ -36,7 +36,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>D:/Downloads/alexa.gif</pixmap>
+     <pixmap>alexa.gif</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
