@@ -12,7 +12,7 @@ If a particular command is not found alexa will simple say "Sorry i dont know th
 You can say sleep to put alexa back into sleep and stop to shutdown alexa.  
 
 
-## Functions that this ALEXA can perform:  
+## Functions that our ALEXA can perform:  
 1). Greeting Functions:  
     * Who are you?  
     * How are you?  
