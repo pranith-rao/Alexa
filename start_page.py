@@ -25,7 +25,7 @@ class Ui_Alexa(object):
         self.label.setFont(font)
         self.label.setStyleSheet("background-color: rgb(0, 73, 220);")
         self.label.setText("")
-        self.label.setPixmap(QtGui.QPixmap("D:/Downloads/alexa.gif"))
+        self.label.setPixmap(QtGui.QPixmap("alexa.gif"))
         self.label.setScaledContents(True)
         self.label.setObjectName("label")
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
