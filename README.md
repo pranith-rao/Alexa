@@ -23,4 +23,62 @@ You can say sleep to put alexa back into sleep and stop to shutdown alexa.
     * What is the time?  
     * Today's date  
     * A Joke  
-    * Weather in any place  
+    * Weather in any place
+    * Current location  
+    * Internet speed  
+    * IP address  
+    
+3). Tasks to be done on chrome  
+    * Play sons on youtube  
+    * Open youtube    
+    * Open google  
+    * Open stack overflow  
+    
+4). Fetching Data  
+    * Who is ____? Eg: Who is MS DHoni?  
+    * Information on wikipedia. Eg: MS Dhoni Wikipedia  
+    * Top 5 News headlines  
+    * Read any page of a particular pdf  
+    
+5). Control applications in windows  
+    * Open visual studio code
+    * Close visual studio code  
+    * Open command prompt  
+    * Open camera  
+    * Open notepad  
+    * Close notepad  
+    
+ 6). Automate social networks  
+    * Send email to a particular person  
+    * Send whatsapp message  
+    * Check someone's Instagram profile and download profile picture  
+    * Tweet a tweet  
+    
+7). Basic window functions  
+    * Switch the window  
+    * Take a screenshot  
+    * Hides all files in the current directory  
+    * Unhide those hidden files  
+    * Check battery percentage  
+    
+8). Control volume of the system  
+    * Volume up  
+    * Volume down  
+    * Mute and unmute  
+    
+9). Control power options of system  
+    * Shut down the system  
+    * Restart the system  
+    * Put the system into sleep  
+    
+10). Other functions  
+    * Simple Mathematical calculations  
+    * Wish someone on thier birthday with thier picture turned into a sketch  
+    
+Lastly,  
+11). Functions to control alexa  
+    * Sleep will put alexa back into sleep mode  
+    * Stop or thank you will shut down alexa completely  
+    
+    
+
