@@ -23,7 +23,7 @@ You can say sleep to put alexa back into sleep and stop to shutdown alexa.
     * What is the time?  
     * Today's date  
     * A Joke  
-    * Weather in any place
+    * Weather in any place  
     * Current location  
     * Internet speed  
     * IP address  
