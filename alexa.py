@@ -60,11 +60,9 @@ def weather(city):
         y = x["main"] 
         current_temperature = y["temp"]
         celsius = math.ceil(int(current_temperature) - 273.15)
-        #current_pressure = y["pressure"] 
-        #current_humidiy = y["humidity"] 
-        #z = x["weather"] 
-        #weather_description = z[0]["description"]
-        return str(celsius)
+        current_weather = x["weather"][0]["main"]
+        details = [celsius,current_weather]
+        return details
 
 
 #function to send a email to someone
@@ -216,7 +214,11 @@ class MainThread(QThread):
                         try:
                             city = str(self.command.split("in",1)[1]).lower().lstrip()
                             weather_api = weather(city)
-                            talk('Weather in' +city +'is'+ weather_api + 'degree celsius')
+                            current_weather = weather_api[1]
+                            temperature = weather_api[0]
+                            talk('Weather in' + city +'is'+ str(current_weather))
+                            talk("and")
+                            talk('temperature is'+ str(temperature) + 'degree celsius')
                         except:
                             talk("Sorry I dont know that place")
                     elif "where am i" in self.command or "what is my location" in self.command or "where are we" in self.command:
