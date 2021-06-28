@@ -11,6 +11,15 @@ That lowercase command will be compared to the ones mentioned in the if-else lad
 If a particular command is not found alexa will simple say "Sorry i dont know that" and wait for the next command.  
 You can say sleep to put alexa back into sleep and stop to shutdown alexa.  
 
+## To create exe file of the project  
+Clone this project to a folder  
+Open cmd prompt with the folder containing this project as current directory  
+And type:  
+   pip install pyinstaller  
+   pyinstaller --onefile alexa,py  
+Done, exe file with alexa.py as name could be found in dist folder   
+
+
 
 ## Functions that our ALEXA can perform:  
 1). Greeting Functions:  
