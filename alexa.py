@@ -151,7 +151,7 @@ def insta(self):
 
 #setting chrome as the browser to open sites
 webbrowser.register('chrome',None,
-	webbrowser.BackgroundBrowser("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"))
+	webbrowser.BackgroundBrowser("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"))
 
 
 class MainThread(QThread):
@@ -331,7 +331,7 @@ class MainThread(QThread):
                         talk("Message has been sent")
                     elif "instagram profile" in self.command or "profile on instagram" in self.command:
                         insta(self)
-                    elif "tweet" in self.command:
+                    elif "tweet" in self.command or "twitter" in self.command:
                         #have your twitter cerdentials saved in twitter_info.txt file
                         talk("What you want to tweet?")
                         print("What you want to tweet?")
