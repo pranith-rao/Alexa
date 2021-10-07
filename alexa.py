@@ -27,6 +27,7 @@ import speedtest
 import playsound
 
 
+
 #text-to-speech converter
 alexaa = pyttsx3.init('sapi5')                                                 
 voices = alexaa.getProperty('voices')                                          #gets all voices
@@ -459,15 +460,15 @@ class Main(QMainWindow):
         super().__init__()
         self.ui = Ui_Alexa()
         self.ui.setupUi(self)
-        self.ui.pushButton.clicked.connect(self.startTask)
-        self.ui.pushButton_2.clicked.connect(self.close)
+        self.ui.pushButton.clicked.connect(self.startTask)          #when start btn is clicked run startTask function
+        self.ui.pushButton_2.clicked.connect(self.close)            #when close btn is clicked close the window
 
     def startTask(self):
         self.ui.movie = QtGui.QMovie("alexa.gif")
         self.ui.label.setMovie(self.ui.movie)
         self.ui.movie.start()
         timer = QTimer(self)
-        timer.timeout.connect(self.showTime)
+        timer.timeout.connect(self.showTime)            
         timer.start(1000)
         startExecution.start()
 
@@ -476,13 +477,13 @@ class Main(QMainWindow):
         current_date = QDate.currentDate()
         label_time = current_time.toString("hh:mm:ss")
         label_date = current_date.toString(Qt.ISODate)
-        self.ui.textBrowser.setText(label_date)
-        self.ui.textBrowser_2.setText(label_time)
+        self.ui.textBrowser.setText(label_date)                #display date in frontend
+        self.ui.textBrowser_2.setText(label_time)              #display time in frontend
 
 app = QApplication(sys.argv)
 alexa = Main()
 alexa.show()
-exit(app.exec_())
+sys.exit(app.exec_())
 
 
 
