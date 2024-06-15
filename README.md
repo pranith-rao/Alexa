@@ -1,5 +1,7 @@
 # Desktop Assistent: Alexa
-This non-AI desktop assistant, named Alexa, is built using Python and leverages the SAPI5 text-to-speech engine for vocal responses. Various Python modules are utilized to perform a wide range of tasks, making Alexa a versatile and useful tool for day-to-day activities.
+This non-AI desktop assistant, named Alexa, is built using Python and leverages the SAPI5 text-to-speech engine for vocal responses. Various Python modules are utilized to perform a wide range of tasks, making Alexa a versatile and useful tool for day-to-day activities.  
+
+Presented this project at **Hack the Mountains 2.0** hackathon and placed in the top 55 teams amongst 300+ teams.
 
 ## Features
 1. Graphical User Interface (GUI):  
@@ -27,6 +29,9 @@ This non-AI desktop assistant, named Alexa, is built using Python and leverages 
 1. Clone this repo into your local machine and open it using VS code or any other editor of your choice.
 2. Open the terminal and create a virtual environment using the command "python -m venv yourenvname".
 3. Activate the virtual env created using the command "yourenvname\Scripts\activate".
+```
+IMP: Python version to be used is 3.9
+```
 4. Once activated, install all the packages using the command "pip install -r requirements.txt".
 5. Once all packages are installed create a .env file with the following vars
 ```
