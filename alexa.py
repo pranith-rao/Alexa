@@ -6,7 +6,7 @@ import pywhatkit
 import datetime,math
 import wikipedia
 import pyjokes
-import requests,sys,json
+import requests,sys
 import smtplib
 import webbrowser,os
 import smtplib,time,PyPDF2
@@ -14,18 +14,29 @@ import cv2
 from requests import get
 import pyautogui
 import instaloader
-import self_tweet
+import files.self_tweet as self_tweet
 from PyQt5 import QtWidgets,QtCore,QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUiType
-from start_page import Ui_Alexa
+from pyqt5_UI.start_page import Ui_Alexa
 import operator
 import psutil
 import speedtest
-import playsound
+from dotenv import load_dotenv
 
+load_dotenv()
+
+vscode_location = os.getenv('VSCODE_LOCATION')
+weather_api_key = os.getenv('WEATHER_API_KEY')
+news_api_key = os.getenv('NEWS_API_KEY')
+email = os.getenv('EMAIL')
+secret_key = os.getenv('SECRET_KEY')
+receiver_whatsapp_number = os.getenv('RECEIVER_WHATSAPP_NUMBER')
+whatsapp_message = os.getenv('WHATSAPP_MESSAGE')
+time_in_24_hrs = int(os.getenv('TIME_IN_24_HRS'))
+time_in_mins = int(os.getenv('TIME_IN_MINS'))
 
 
 #text-to-speech converter
@@ -51,7 +62,7 @@ def wishMe():
 
 #function to fetch 'C from the weather api
 def weather(city): 
-    api_key = "b698f17eaff024ba14b301514e2f321a"
+    api_key = weather_api_key
     base_url = "http://api.openweathermap.org/data/2.5/weather?"
     city_name = city
     complete_url = base_url + "appid=" + api_key + "&q=" + city_name 
@@ -71,14 +82,14 @@ def sendEmail(to, content):
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
     server.starttls()
-    server.login('youremail', 'password')
+    server.login(email, secret_key)
     server.sendmail('youremail', to, content)
     server.close()
 
 
 #function to fetch 5 headlines from news api
 def news():
-    main_url = 'http://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=b4949ddb6afd4593a1176f76bfe0a288'
+    main_url = 'http://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=' + news_api_key
     fetched_news = requests.get(main_url).json()
     articles = fetched_news['articles']
     headlines = []
@@ -107,7 +118,7 @@ def mylocation():
 
 #function to read content of the pdf
 def pdf_reader():
-    pdf = open('The_Night_We_Met.pdf','rb')                                   #read binary
+    pdf = open('files/The_Night_We_Met.pdf','rb')                                   #read binary
     pdfReader = PyPDF2.PdfFileReader(pdf)
     pages = pdfReader.numPages
     talk(f'Total number of pages in this pdf is {pages}')
@@ -150,9 +161,9 @@ def insta(self):
             talk("OK")
             pass
 
-#setting chrome as the browser to open sites
-webbrowser.register('chrome',None,
-	webbrowser.BackgroundBrowser("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"))
+#setting edge as the browser to open sites
+webbrowser.register('edge',None,
+	webbrowser.BackgroundBrowser("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"))
 
 
 class MainThread(QThread):
@@ -182,7 +193,7 @@ class MainThread(QThread):
 
     def TaskExecution(self):
         while True:                                                                          #alexa in sleep mode initially
-            print("Wake me up to continue")
+            print("Please wake me up by saying 'Alexa wake up' to continue")
             self.permission = self.take_command()
             if 'wake up' in self.permission:
                 wishMe()
@@ -192,7 +203,7 @@ class MainThread(QThread):
                     #list of functions alexa can perform
                     #greeting functions
                     if 'who are you' in self.command:
-                        talk("I'm Alexa, a desktop assistant built by team entity")
+                        talk("I'm Alexa, a desktop assistant built by Pranith")
                     elif 'how are you' in self.command:
                         talk("I'm fine. How are you?")
                     elif "i am fine" in self.command:
@@ -210,40 +221,47 @@ class MainThread(QThread):
                         date = datetime.date.today().strftime("%B %d, %Y")              #month,day,year
                         talk('Todays date is'+ str(date))
                     elif 'joke' in self.command:
-                        talk(pyjokes.get_joke())
+                        joke = pyjokes.get_joke()
+                        print(joke)
+                        talk(joke)
                     elif 'weather' in self.command:
                         try:
                             city = str(self.command.split("in",1)[1]).lower().lstrip()
                             weather_api = weather(city)
                             current_weather = weather_api[1]
                             temperature = weather_api[0]
-                            talk('Weather in' + city +'is'+ str(current_weather))
-                            talk("and")
-                            talk('temperature is'+ str(temperature) + 'degree celsius')
+                            talk('Weather in' + city +'is'+ str(current_weather) + "and" + 'temperature is' + str(temperature) + 'degree celsius')
                         except:
-                            talk("Sorry I dont know that place")
+                            talk("Sorry but can you please specify the place you want to know the weather of?")
                     elif "where am i" in self.command or "what is my location" in self.command or "where are we" in self.command:
-                        talk("Let me check")
+                        talk("Let me check.")
                         mylocation()
                     elif 'internet speed' in self.command or 'net speed' in self.command:
                         talk("OK let me check")
+                        talk("Please give me 2 minutes")
                         net_details = speedtest.Speedtest()
                         downloadSpeed = int(net_details.download()/1000000)
                         uploadSpeed = int(net_details.upload()/1000000)
-                        talk(f'Your download speed is {downloadSpeed} MB per second and your upload speed is {uploadSpeed} MB per second')
+                        result_message = f'Your download speed is {downloadSpeed} MB per second and your upload speed is {uploadSpeed} MB per second'
+                        print(result_message)
+                        talk(result_message)
                     elif "ip address" in self.command:
                         ip = get('https://api.ipify.org').text
                         print(f"Your IP address is {ip}")
                         talk(f"Your IP address is {ip}") 
                     
-                    #tasks to be done on chrome
+                    #tasks to be done on edge
                     elif 'play' in self.command:                                               #command to play song
                         song = self.command.replace('play', '')                              #play is removed from command so that we get the song name
                         talk('playing ' + song)                                              #alexa will inform us which song is being played
-                        pywhatkit.playonyt(song)                                             #song will be played on youtube
+                        talk('Going to sleep wake me up again')
+                        pywhatkit.playonyt(song)
+                        break                                             #song will be played on youtube
                     elif 'open youtube' in self.command:
                         talk("Opening youtube")
-                        webbrowser.get('chrome').open("youtube.com")
+                        talk('Going to sleep wake me up again')
+                        webbrowser.get('edge').open("youtube.com")
+                        break
                     elif 'open google' in self.command:
                         talk("What should I search on google?")
                         try:
@@ -252,10 +270,12 @@ class MainThread(QThread):
                             talk("Please repeat it again")
                             search = self.take_command().lower()
                         talk("Fetching your results from google")
-                        webbrowser.get('chrome').open(f"google.com/search?q={search}")
+                        webbrowser.get('edge').open(f"google.com/search?q={search}")
                     elif 'open stack overflow' in self.command:
                         talk("Opening stack overflow")
-                        webbrowser.get('chrome').open("https://stackoverflow.com/")
+                        talk('Going to sleep wake me up again')
+                        webbrowser.get('edge').open("https://stackoverflow.com/")
+                        break
                     
                     #fetching data
                     elif 'who is' in self.command:
@@ -286,7 +306,7 @@ class MainThread(QThread):
                     #control applications in windows
                     elif 'open code' in self.command:
                         talk("Opening visual studio code")
-                        vs_path = "C:\\Users\\prani\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
+                        vs_path = vscode_location
                         os.startfile(vs_path)
                     elif "close code" in self.command:
                         talk("Closing visual studio code")
@@ -313,9 +333,10 @@ class MainThread(QThread):
                         os.system("taskkill /f /im notepad.exe")
 
                     #automate social networks
-                    elif 'email to' in self.command:
+                    elif 'send an email' in self.command:
                         try:
-                            to = "email ID"                                                        #email ID of the person you want to send the mail
+                            talk("Please enter the mail ID of the person you want to email")
+                            to = input()                                                      #email ID of the person you want to send the mail
                             talk("Please enter the content of the mail")
                             print("After entering the content press enter to send")
                             print("Please enter the content of the mail:")
@@ -328,14 +349,14 @@ class MainThread(QThread):
                     elif 'send whatsapp message' in self.command:
                         #At the time specified, message will be sent to the phone number entered
                         #eg:+(countrycode)1234567890
-                        pywhatkit.sendwhatmsg("phone number","message from alexa",22,50)            #(number with country code,message,hours in 24-format,minutes)                    
+                        pywhatkit.sendwhatmsg(receiver_whatsapp_number,whatsapp_message,time_in_24_hrs,time_in_mins)            #(number with country code,message,hours in 24-format,minutes)                    
                         talk("Message has been sent")
                     elif "instagram profile" in self.command or "profile on instagram" in self.command:
                         insta(self)
                     elif "tweet" in self.command or "twitter" in self.command:
                         #have your twitter cerdentials saved in twitter_info.txt file
-                        talk("What you want to tweet?")
-                        print("What you want to tweet?")
+                        talk("Please enter what you want to tweet?")
+                        print("Please enter what you want to tweet?")
                         tweet = input().capitalize()
                         if tweet == 'none':
                             talk("tweet can't be empty")
@@ -427,7 +448,7 @@ class MainThread(QThread):
                     elif 'birthday' in self.command:
                         talk("Sure")
                         talk("Happieee Birthday")
-                        img = cv2.imread('Bday_Pic.jpg')
+                        img = cv2.imread('static/Bday_Pic.jpg')
                         print(img)
                         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                         inverted_gray_image = 255 - gray_image
@@ -464,7 +485,7 @@ class Main(QMainWindow):
         self.ui.pushButton_2.clicked.connect(self.close)            #when close btn is clicked close the window
 
     def startTask(self):
-        self.ui.movie = QtGui.QMovie("alexa.gif")
+        self.ui.movie = QtGui.QMovie("static/alexa.gif")
         self.ui.label.setMovie(self.ui.movie)
         self.ui.movie.start()
         timer = QTimer(self)
